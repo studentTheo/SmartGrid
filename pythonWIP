@@ -1,0 +1,41 @@
+import serial  # import module
+import time
+import re
+
+arduinoPort = serial.Serial('/dev/cu.usbmodem14401', baudrate=9600,
+                            timeout=1)  # create serial port (arduinoPort) and timeout if no data received for 1 second
+time.sleep(3)  # seconds waited for Arduino to initialize
+
+currentTemperature = 0
+currentHumidity = 0
+currentVisitors = 0
+
+# serial data coming from the Arduino will be stored in a serial buffer, which is why it is import to only send data once
+while 1:
+
+    userInput = raw_input("Acquire data? ")  # extract data?
+    if userInput == 'y':  # answer check
+        serialInputData = arduinoPort.readline()  # import data from serial buffer
+        if serialInputData.find("TEMP") == 0:  # check if data is temperature data
+            currentTemperature = re.findall('[0-9]+', serialInputData)  # find value
+            print("Found temperature data: ", currentTemperature)  # display value
+
+        elif serialInputData.find("HUMI") == 0:  # check if data is humidity data
+            currentHumidity = re.findall('[0-9]+', serialInputData)  # find value
+            print("Found humidity data: ", currentHumidity)  # display value
+
+        elif serialInputData.find("VISI") == 0:  # check if data is visitor data
+            currentVisitors = re.findall('[0-9]+', serialInputData)  # find value
+            print("Found visitor data: ", currentVisitors)  # display value
+        else:
+            print("No formatted data found: ", serialInputData)
+
+    if userInput == 'n':
+        userInput = raw_input("Set temperature (t) or lighting (l)? ")
+        if userInput == 't':
+            userInput = raw_input("How many degrees celsius should the temperature be? ")
+            outputString = "SETT" + userInput
+            print(outputString)
+            arduinoPort.write(outputString.encode("utf-8"))
+            serialInputData = arduinoPort.readline()
+            print(serialInputData)

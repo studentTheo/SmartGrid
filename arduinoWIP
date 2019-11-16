@@ -1,0 +1,81 @@
+int     sendTemperatureButton = 8;
+int     sendVisitorsButton    = 9;
+int     sendHumidityButton    = 10;
+int     sendButton            = 11;
+
+int     currentTemperature    = 20;
+int     currentVisitors       = 30;
+int     currentHumidity       = 50;
+
+int     setTemperature;
+int     setLighting;
+
+bool    buttonState8;
+bool    buttonState9;
+bool    buttonState10;
+bool    buttonState11;
+
+String  userInput;
+
+int sendAnalogData(String type, int value) {
+  Serial.begin(9600);
+  String outString = "DATAVAL";
+  String valString;
+  valString = String(value);
+  
+  if (type == "TEMP") {
+    outString.replace("DATA", "TEMP");
+  }
+  if (type == "VISI") {
+    outString.replace("DATA", "VISI");
+  }
+  if (type == "HUMI") {
+    outString.replace("DATA", "HUMI");
+  }
+  outString.replace("VAL", valString);
+
+  Serial.println(outString);
+  Serial.end();
+}
+
+void setup() {
+  pinMode(sendTemperatureButton, INPUT); 
+  pinMode(sendVisitorsButton, INPUT); 
+  pinMode(sendHumidityButton, INPUT);
+  pinMode(sendButton, INPUT); 
+}
+
+void loop() {
+  buttonState11 = digitalRead(sendButton);  
+
+  if(Serial.available()>0) {
+    userInput = Serial.parseInt();
+    Serial.print("User input read");
+    Serial.print(userInput);
+  }
+  
+  if(buttonState11 == LOW) {
+    buttonState8 = digitalRead(sendTemperatureButton);
+    buttonState9 = digitalRead(sendVisitorsButton);
+    buttonState10 = digitalRead(sendHumidityButton);
+  
+    if (buttonState8 == LOW) {
+      sendAnalogData("TEMP", currentTemperature);
+      while (buttonState8 == LOW) {
+        buttonState8 = digitalRead(sendTemperatureButton);
+      }
+    }
+    if (buttonState9 == LOW) {
+      sendAnalogData("VISI", currentVisitors);
+      while (buttonState9 == LOW) {
+        buttonState9 = digitalRead(sendVisitorsButton);
+      }
+    }
+    if (buttonState10 == LOW) {
+      sendAnalogData("HUMI", currentHumidity);
+      while (buttonState10 == LOW) {
+        buttonState10 = digitalRead(sendHumidityButton);
+      }
+    }
+  }
+}
